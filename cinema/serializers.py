@@ -38,8 +38,20 @@ class MovieListSerializer(serializers.ModelSerializer):
         model = Movie
         fields = ("id", "title", "description", "duration", "genres", "actors")
 
-    def get_actors(self, obj):
-        return [str(actor) for actor in obj.actors.all()]
+    def get_actors(self, obj: Movie) -> list[str]:
+        return [actor.name for actor in obj.actors.all()]
+
+    def to_representation(self, instance: Movie) -> dict[str, Any]:
+        return super().to_representation(instance)
+
+    def create(self, validated_data: dict[str, Any]) -> Movie:
+        return Movie.objects.create(**validated_data)
+
+    def update(self, instance: Movie, validated_data: dict[str, Any]) -> Movie:
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
 
 
 class MovieDetailSerializer(serializers.ModelSerializer):
